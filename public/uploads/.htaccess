@@ -1,0 +1,39 @@
+# INKORA uploads
+#
+# This folder holds files that visitors uploaded, so it has
+# to be treated as hostile.
+#
+# The upload handler already checks the real MIME type and
+# renames every file to a uuid, but this is the backstop: if
+# a .php file ever does land here, Apache must refuse to run
+# it rather than execute it as code. That single mistake is
+# how most PHP sites get taken over.
+
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+
+<IfModule mod_php7.c>
+  php_flag engine off
+</IfModule>
+
+<IfModule mod_php8.c>
+  php_flag engine off
+</IfModule>
+
+# Belt and braces for setups where PHP runs as CGI/FastCGI
+# and the php_flag above is ignored.
+<FilesMatch "\.(php|php[0-9]?|phtml|phps|pl|py|cgi|sh|htaccess)$">
+  Require all denied
+</FilesMatch>
+
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8
+
+# Serve, don't execute.
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Content-Security-Policy "default-src 'none'; img-src 'self'; object-src 'none'"
+</IfModule>
+
+Options -Indexes -ExecCGI
