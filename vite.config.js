@@ -1,27 +1,34 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
 
-  server: {
-    /* In development the React app runs on :5173 and PHP runs
-       somewhere else, so /api and /uploads get forwarded.
-       In production both are served from the same folder and
-       Apache handles it, so none of this applies.
+  /* Where the PHP backend lives during development.
+     Put VITE_API_PROXY in a .env file (see .env.example).
 
-       Point VITE_API_PROXY at wherever PHP is listening
-       (XAMPP is usually http://localhost). */
-    proxy: {
-      "/api": {
-        target: process.env.VITE_API_PROXY || "http://localhost:8000",
-        changeOrigin: true,
-      },
-      "/uploads": {
-        target: process.env.VITE_API_PROXY || "http://localhost:8000",
-        changeOrigin: true,
+     In production this never applies - the React build and
+     the API are served from the same folder by Apache, so
+     /api is just a path on the same domain. */
+  const target = env.VITE_API_PROXY || "http://localhost:8000";
+
+  return {
+    plugins: [react(), tailwindcss()],
+
+    server: {
+      proxy: {
+        "/api": {
+          target,
+          changeOrigin: true,
+          secure: true,
+        },
+        "/uploads": {
+          target,
+          changeOrigin: true,
+          secure: true,
+        },
       },
     },
-  },
+  };
 });

@@ -91,7 +91,29 @@ Then open http://localhost:5173.
 | `npm run build` | builds into `dist/` |
 | `npm run preview` | serves the built version locally |
 
-In development Vite proxies `/api` and `/uploads` to `http://localhost:8000`. If your PHP server is somewhere else, set `VITE_API_PROXY` before starting.
+### Pointing the dev server at a backend
+
+`npm run dev` only runs the React side. It needs a PHP backend to talk to, or
+every request fails with a 502 and the terminal shows `ECONNREFUSED`.
+
+Copy `.env.example` to `.env` and set one line:
+
+```
+VITE_API_PROXY=https://your-live-site.com
+```
+
+That proxies `/api` and `/uploads` to the deployed backend, so there is nothing
+to install. Note it reads and **writes the live database** - anything you create
+while testing shows up on the real site.
+
+To keep it fully local instead, install XAMPP, point it at this folder, and use:
+
+```
+VITE_API_PROXY=http://localhost
+```
+
+None of this applies in production. The build and the API are served from the
+same domain, so `/api` is just a path.
 
 ### Database
 
