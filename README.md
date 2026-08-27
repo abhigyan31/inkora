@@ -14,7 +14,7 @@ It started as a frontend-only build with everything in localStorage. All the dat
 
 ## Screenshots
 
-_TODO: add screenshots of the feed, a blog page and the profile._
+![INKORA landing page](docs/screenshots/landing.png)
 
 ---
 
@@ -99,7 +99,7 @@ every request fails with a 502 and the terminal shows `ECONNREFUSED`.
 Copy `.env.example` to `.env` and set one line:
 
 ```
-VITE_API_PROXY=https://your-live-site.com
+VITE_API_PROXY=https://darkturquoise-mandrill-722077.hostingersite.com
 ```
 
 That proxies `/api` and `/uploads` to the deployed backend, so there is nothing
