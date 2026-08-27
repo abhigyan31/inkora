@@ -1,0 +1,122 @@
+# INKORA - Apache config for Hostinger
+# Vite copies public/ into dist/, so this ends up next to
+# index.html automatically. Upload it with the rest.
+
+
+# --- SPA routing (the important one) ---
+# React Router handles /blog/:id etc in the browser. Apache
+# doesn't know those paths exist, so without this a refresh
+# on /blog/demo-1 gives a 404.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Force https. Comment these 3 lines out until the SSL
+  # certificate is actually active, or you get a redirect loop.
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Hands off the API and the uploads folder.
+  # This has to come BEFORE the catch-all: /api/blogs isn't
+  # a real file, so without this rule it would get rewritten
+  # to index.html and the API would return the React app.
+  RewriteRule ^api(/|$) - [L]
+  RewriteRule ^uploads(/|$) - [L]
+
+  # Leave real files and folders alone
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Everything else is an app route
+  RewriteRule . /index.html [L]
+</IfModule>
+
+
+# --- Gzip ---
+# Takes the JS bundle from ~448 KB to ~116 KB. Matters a lot
+# on shared hosting.
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE text/javascript
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/x-javascript
+  AddOutputFilterByType DEFLATE application/json
+  AddOutputFilterByType DEFLATE image/svg+xml
+  AddOutputFilterByType DEFLATE application/wasm
+</IfModule>
+
+
+# --- Caching ---
+# Vite hashes asset filenames so they can be cached forever.
+# index.html must NOT be cached or people keep getting the
+# old build after a redeploy.
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  ExpiresByType text/css                  "access plus 1 year"
+  ExpiresByType application/javascript    "access plus 1 year"
+  ExpiresByType text/javascript           "access plus 1 year"
+  ExpiresByType application/wasm          "access plus 1 year"
+
+  ExpiresByType image/png                 "access plus 6 months"
+  ExpiresByType image/jpeg                "access plus 6 months"
+  ExpiresByType image/webp                "access plus 6 months"
+  ExpiresByType image/svg+xml             "access plus 6 months"
+  ExpiresByType image/x-icon              "access plus 6 months"
+  ExpiresByType font/woff2                "access plus 1 year"
+
+  ExpiresByType text/html                 "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|mjs|css|woff2|wasm)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+
+# --- Security headers ---
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+
+  # Turn on once https is confirmed working
+  # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+
+# --- MIME types ---
+# pdf.js ships its worker as .mjs. Some Apache setups serve
+# that as text/plain and the viewer never starts.
+
+<IfModule mod_mime.c>
+  AddType application/javascript .mjs
+  AddType application/wasm       .wasm
+  AddType font/woff2             .woff2
+</IfModule>
+
+
+# --- Misc ---
+
+Options -Indexes
+ServerSignature Off
+
+# Block dotfiles except .well-known (needed for SSL renewal)
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_URI} (^|/)\.(?!well-known)
+  RewriteRule . - [F]
+</IfModule>
