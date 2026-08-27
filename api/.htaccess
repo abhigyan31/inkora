@@ -1,0 +1,42 @@
+# INKORA API - Apache config
+#
+# Everything under /api/ goes to index.php, which works out
+# the route from the URL.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /api/
+
+  # Leave real files alone (nothing here is public, but this
+  # keeps the rule honest if a static file is ever added).
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
+
+  RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+
+# Nothing in here should ever be fetched directly. config.php
+# holds the database password, and .sql is the whole schema.
+<FilesMatch "\.(sql|md|log|ini|example\.php)$">
+  Require all denied
+</FilesMatch>
+
+<Files "config.php">
+  Require all denied
+</Files>
+
+
+# The API sets its own Content-Type. Don't let Apache add a
+# charset that breaks JSON parsing.
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always unset X-Powered-By
+</IfModule>
+
+<IfModule mod_php.c>
+  php_flag display_errors off
+  php_flag expose_php off
+</IfModule>
+
+Options -Indexes
