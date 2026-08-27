@@ -1,0 +1,23 @@
+{
+  "name": "inkora",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "latest",
+    "pdfjs-dist": "^6.2.108",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router": "^8.3.0",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "vite": "latest"
+  }
+}
