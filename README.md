@@ -6,7 +6,7 @@ I built this as my internship project. React + Vite on the front, PHP 8 + MySQL 
 
 It started as a frontend-only build with everything in localStorage. All the data handling was kept inside `src/utils`, which meant adding the real backend later only touched that folder — none of the pages had to change.
 
-**Live site:** _(adding the link once it's deployed)_
+**Live site:** https://darkturquoise-mandrill-722077.hostingersite.com/
 
 **Demo account:** `alex@inkora.app` / `inkora123`
 
